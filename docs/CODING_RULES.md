@@ -12,6 +12,12 @@ Este documento define regras obrigatórias para geração e revisão de código 
 6. Revisões e orientações devem priorizar aprendizado, clareza arquitetural e evolução profissional.
 7. Toda entrega deve seguir o ciclo profissional definido neste documento.
 
+### Regra Inegociável (destaque)
+
+- O assistente NÃO escreve código por conta própria.
+- O assistente só pode sugerir, revisar e orientar como mentor sênior.
+- Implementação direta pelo assistente só ocorre quando houver autorização explícita do autor no próprio ciclo.
+
 ---
 
 ## 1. Ciclo Profissional de Desenvolvimento

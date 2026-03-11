@@ -38,6 +38,104 @@ Operação principal offline; sincronização e validação de licença ocorrem 
 
 ---
 
+## 3A. Referência Técnica Operacional (Estrutura Adotada)
+
+Esta seção centraliza o contexto técnico-operacional no mesmo arquivo durante a fase atual.
+Quando o projeto escalar, cada bloco poderá ser extraído para documentos dedicados.
+
+### 3A.1 Visão geral da arquitetura
+
+- Alvo arquitetural: modelo local-first com 3 aplicações (`server-local`, `server-central`, `pdv-desktop`).
+- Alvo interno do `server-local`: `Domain <- Application <- Infrastructure <- Presentation`.
+- Estado atual: estrutura de módulos e documentação arquitetural consolidadas; implementação funcional ainda em início.
+- Referências: `docs/ARCHITECTURE.md` e ADRs em `docs/ADR/`.
+
+### 3A.2 Stack tecnológico completo
+
+- Linguagem: Java 21.
+- Build: Maven multi-módulo (`pom` agregador na raiz).
+- Módulos: `server-local`, `server-central`, `pdv-desktop`.
+- Testes: JUnit 5 (`junit-jupiter`).
+- Runner de testes (`server-local`): Maven Surefire `3.2.5`.
+- Qualidade de código: Spotless Maven Plugin `2.43.0` com Google Java Format `1.22.0`.
+- Comandos padrão de qualidade (V1):
+  - `mvn -B -ntp verify`
+  - `mvn -B -ntp spotless:check`
+- Tecnologias planejadas (ainda não implementadas no código): Spring Boot e PostgreSQL no `server-central`.
+
+### 3A.3 Variáveis de ambiente
+
+- Estado atual do repositório: nenhuma variável de ambiente obrigatória identificada.
+- Não há `.env`, `application.yml`, `application.yaml` ou `application.properties` versionados até o momento.
+- Regra de evolução: toda nova variável deve ser registrada neste arquivo antes de uso em produção.
+
+Template:
+- `NOME_VARIAVEL`: propósito, valor default, obrigatório (`sim`/`não`), módulo(s) afetado(s), exemplo de uso.
+
+### 3A.4 Estrutura do diretório de conteúdo
+
+- Estrutura atual da raiz:
+  - `docs/`: documentação viva do projeto e ADRs.
+  - `server-local/`: núcleo de domínio e evolução por fases.
+  - `server-central/`: módulo reservado para integração central.
+  - `pdv-desktop/`: módulo cliente desktop.
+  - `pom.xml`: agregador Maven da solução.
+  - `README.md`: visão geral e convenção de commits.
+- Observação: diretórios `target/` existem nos módulos por builds locais e não fazem parte do código-fonte.
+
+### 3A.5 Serviços, jobs e models por app
+
+- `server-local`
+  - Serviços/API: não implementados ainda.
+  - Jobs: não implementados.
+  - Models implementados: `Money` (factory + operações `plus`, `minus`, `times`, `max`, `compareTo`, `isNegative`, `isZero`) e `DomainValidationException`.
+  - Models planejados V1: `Sale`, `SaleItem`, `Product`, `Stock`, `Quantity`, `Percentage`, `PaymentMethod`.
+- `server-central`
+  - Serviços/API: não implementados ainda.
+  - Jobs: não implementados.
+  - Models: não implementados ainda.
+- `pdv-desktop`
+  - UI e integração com API local: não implementadas ainda.
+  - Jobs locais: não implementados.
+  - Models locais: não implementados ainda.
+
+### 3A.6 Common hurdles (com soluções documentadas)
+
+- Misturar regra crítica em camada errada.
+  - Solução: validar direção de dependências e manter regra no `domain`.
+- Uso de `float`/`double` em regra monetária.
+  - Solução: usar exclusivamente `Money` (`BigDecimal`, escala 2, `HALF_UP`).
+- Expansão de escopo durante o ciclo.
+  - Solução: executar uma fatia por vez com contrato e critério de pronto explícitos.
+- Divergência entre implementação e documentação.
+  - Solução: atualizar `CODEX`, modelo de domínio e ADR ao fim de cada ciclo/fase.
+- Regressão de nomenclatura de pacote para Value Objects.
+  - Solução: padrão oficial consolidado em `domain/vo`; não recriar variações como `domain/valueobject`.
+- Estrutura criada sem código correspondente.
+  - Solução: evitar considerar pacote criado como funcionalidade pronta; validar por testes e classes concretas.
+
+### 3A.7 Design patterns do projeto
+
+- Clean Architecture (direção de dependências para dentro).
+- Domain-Driven Design tático (Aggregate Root, Entities, Value Objects).
+- Use Case/Application Service para orquestração sem deslocar regra crítica do domínio.
+- Testes de domínio como documentação executável.
+
+### 3A.8 Checklist pós-implementação
+
+1. Regra implementada na camada correta.
+2. Invariantes protegidas por API pública.
+3. Testes cobrindo cenário válido, inválido e borda.
+4. Sem `float`/`double` no domínio.
+5. Sem anotação de framework no domínio.
+6. `mvn -B -ntp verify` em verde.
+7. `mvn -B -ntp spotless:check` em verde.
+8. Revisão de consistência entre pacote/documentação (nomes e contratos).
+9. Documentação atualizada (`CODEX`, `DOMAIN_MODEL_V1`, ADR quando aplicável).
+10. Próximo ciclo recomendado explicitado no fechamento de sessão.
+
+---
+
 ## 4. Escopo da Fase Atual (Fase 1)
 
 Construir domínio puro no `server-local` com testes, sem dependência de framework:
@@ -52,11 +150,10 @@ Construir domínio puro no `server-local` com testes, sem dependência de framew
 
 ## 5. Próximos Passos Imediatos
 
-1. Criar estrutura de pacotes do `server-local` por camada.
-2. Implementar `Money`, `Quantity`, `Percentage` e `PaymentMethod`.
-3. Implementar `Sale` com transições de estado explícitas.
-4. Implementar `Product`, `SaleItem` e `Stock`.
-5. Cobrir invariantes críticas com JUnit.
+1. Implementar `Quantity`, `Percentage` e `PaymentMethod`.
+2. Implementar `Sale` com transições de estado explícitas.
+3. Implementar `Product`, `SaleItem` e `Stock`.
+4. Cobrir invariantes críticas com JUnit.
 
 ---
 
@@ -200,6 +297,12 @@ Mentor (assistente):
 3. Revisa contrato, testes e código.
 4. Não implementa nada sem autorização explícita do autor.
 5. Quando autorizado, implementa apenas apoio pontual, mantendo o autor como implementador principal para aprendizado.
+
+### Regra inegociável de mentoria
+
+- O assistente NÃO escreve código por conta própria.
+- O papel padrão do assistente é mentorar, revisar e orientar decisões técnicas.
+- Qualquer implementação direta pelo assistente exige autorização explícita do autor no ciclo atual.
 
 Ambos:
 1. Uma fatia por vez.

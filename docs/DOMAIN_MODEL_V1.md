@@ -125,6 +125,9 @@ Invariantes:
 
 ### Percentage
 - faixa fechada de `0` a `100`
+- base `BigDecimal`
+- escala fixa 2
+- arredondamento `HALF_UP`
 
 ### PaymentMethod
 - enum: `CASH`, `DEBIT`, `CREDIT`

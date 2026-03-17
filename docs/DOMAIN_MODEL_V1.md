@@ -120,14 +120,51 @@ Invariantes:
 - operações: `plus`, `minus`, `times`, `max`, `isNegative`, `isZero`
 
 ### Quantity
-- inteiro positivo
+- representa quantidade inteira de item
+- base `int`
+- criação via factory `Quantity.of(int value)`
+- aceita apenas valores maiores que zero
 - proíbe zero e negativo
+- expõe `value()` para leitura do valor normalizado
+- implementa `compareTo`
+- comparar com `null` deve gerar `DomainValidationException`
+- mensagem de erro atual na criação inválida:
+  `DomainValidationException("quantity must be greater than zero")`
 
 ### Percentage
 - faixa fechada de `0` a `100`
 - base `BigDecimal`
 - escala fixa 2
 - arredondamento `HALF_UP`
+- criação via factory `Percentage.of(BigDecimal percentage)`
+- `null` é inválido
+- valores são normalizados para 2 casas decimais no momento da criação
+- limites válidos incluem `0.00` e `100.00`
+- valores menores que `0` ou maiores que `100` são inválidos
+- expõe `value()` para leitura do valor normalizado
+- implementa `compareTo`
+- comparar com `null` deve gerar `DomainValidationException`
+- mensagens de erro atuais:
+  - `DomainValidationException("percentage cannot be null")`
+  - `DomainValidationException("discount percentage out of range")`
+
+### Observações de Contrato dos VOs Já Implementados
+
+`Quantity` e `Percentage` já possuem implementação inicial no `server-local` e devem ser tratados como VOs de proteção de invariantes, não como tipos primitivos expostos diretamente na regra de negócio.
+
+Contratos já validados por testes:
+- `Quantity`
+  - cria valor válido quando `value > 0`
+  - rejeita `0`
+  - rejeita valor negativo
+- `Percentage`
+  - aceita `0.00`
+  - aceita `100.00`
+  - aplica normalização com `HALF_UP`
+  - rejeita `null`
+  - rejeita valor negativo
+  - rejeita valor acima de `100`
+  - permite comparação entre instâncias válidas
 
 ### PaymentMethod
 - enum: `CASH`, `DEBIT`, `CREDIT`

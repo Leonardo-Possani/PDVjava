@@ -117,7 +117,7 @@ Invariantes:
 - escala fixa 2
 - arredondamento `HALF_UP`
 - comparação via `compareTo`
-- operações: `plus`, `minus`, `times`, `max`, `isNegative`, `isZero`
+- operações: `plus(Money)`, `minus(Money)`, `times(Quantity)`, `max(Money)`, `isNegative`, `isZero`
 
 ### Quantity
 - representa quantidade inteira de item

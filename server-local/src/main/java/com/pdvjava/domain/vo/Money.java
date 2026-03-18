@@ -42,11 +42,11 @@ public final class Money implements Comparable<Money> {
     return Money.of(this.amount.subtract(other.amount));
   }
 
-  public Money times(Money other) {
-    if (other == null) {
-      throw new DomainValidationException("money amount cannot be null");
+  public Money times(Quantity quantity) {
+    if (quantity == null) {
+      throw new DomainValidationException("quantity cannot be null");
     }
-    return Money.of(this.amount.multiply(other.amount));
+    return Money.of(this.amount.multiply(BigDecimal.valueOf(quantity.value())));
   }
 
   public Money max(Money other) {

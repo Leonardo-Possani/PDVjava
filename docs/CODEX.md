@@ -88,7 +88,7 @@ Template:
 - `server-local`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
-  - Models implementados: `Money` (factory + operações `plus`, `minus`, `times`, `max`, `compareTo`, `isNegative`, `isZero`) e `DomainValidationException`.
+  - Models implementados: `Money` (factory + operações `plus`, `minus`, `times(Quantity)`, `max`, `compareTo`, `isNegative`, `isZero`) e `DomainValidationException`.
   - Models planejados V1: `Sale`, `SaleItem`, `Product`, `Stock`, `Quantity`, `Percentage`, `PaymentMethod`.
 - `server-central`
   - Serviços/API: não implementados ainda.

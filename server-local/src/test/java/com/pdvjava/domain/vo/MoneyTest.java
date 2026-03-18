@@ -89,23 +89,12 @@ class MoneyTest {
   }
 
   @Test
-  void should_multiply_money_value_when_times_is_called_with_positive_factor() {
+  void should_multiply_money_value_when_times_is_called_with_valid_quantity() {
     Money first = Money.of(new BigDecimal("5.00"));
-    Money second = Money.of(new BigDecimal("5.00"));
+    Quantity quantity = Quantity.of(5);
 
-    Money result = first.times(second);
+    Money result = first.times(quantity);
     Money expected = Money.of(new BigDecimal("25.00"));
-
-    assertEquals(0, result.compareTo(expected));
-  }
-
-  @Test
-  void should_return_zero_when_times_is_called_with_zero_factor() {
-    Money first = Money.of(new BigDecimal("5.00"));
-    Money second = Money.of(new BigDecimal("0.00"));
-
-    Money result = first.times(second);
-    Money expected = Money.of(new BigDecimal("0.00"));
 
     assertEquals(0, result.compareTo(expected));
   }
@@ -118,34 +107,23 @@ class MoneyTest {
   }
 
   @Test
-  void should_apply_half_up_rounding_when_times_result_has_more_than_two_decimals() {
-    Money first = Money.of(new BigDecimal("0.10"));
-    Money second = Money.of(new BigDecimal("0.15"));
-
-    Money result = first.times(second);
-    Money expected = Money.of(new BigDecimal("0.02"));
-
-    assertEquals(0, result.compareTo(expected));
-  }
-
-  @Test
-  void should_return_negative_when_money_is_positive_and_factor_is_negative() {
+  void should_return_same_money_value_when_times_is_called_with_quantity_one() {
     Money first = Money.of(new BigDecimal("5.00"));
-    Money second = Money.of(new BigDecimal("-2.00"));
+    Quantity quantity = Quantity.of(1);
 
-    Money result = first.times(second);
-    Money expected = Money.of(new BigDecimal("-10.00"));
+    Money result = first.times(quantity);
+    Money expected = Money.of(new BigDecimal("5.00"));
 
     assertEquals(0, result.compareTo(expected));
   }
 
   @Test
-  void should_return_positive_when_money_is_negative_and_factor_is_negative() {
-    Money first = Money.of(new BigDecimal("-5.00"));
-    Money second = Money.of(new BigDecimal("-2.00"));
+  void should_multiply_money_value_when_times_is_called_with_large_quantity() {
+    Money first = Money.of(new BigDecimal("5.00"));
+    Quantity quantity = Quantity.of(125);
 
-    Money result = first.times(second);
-    Money expected = Money.of(new BigDecimal("10.00"));
+    Money result = first.times(quantity);
+    Money expected = Money.of(new BigDecimal("625.00"));
 
     assertEquals(0, result.compareTo(expected));
   }

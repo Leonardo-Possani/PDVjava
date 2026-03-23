@@ -21,7 +21,7 @@ PDVjava é um sistema de ponto de venda local-first para pequenos estabeleciment
 - Descoberta de domínio consolidada (`docs/DOMAIN_DISCOVERY.md`).
 - Modelo inicial de domínio definido (`docs/DOMAIN_MODEL_V1.md`).
 - Roadmap de execução alinhado em `docs/DOMAIN_ROADMAP.md`.
-- Código de domínio ainda não implementado (fase de preparação arquitetural).
+- Implementação do domínio iniciada no `server-local`, com foco atual nos Value Objects e testes de domínio.
 
 ---
 
@@ -47,7 +47,7 @@ Quando o projeto escalar, cada bloco poderá ser extraído para documentos dedic
 
 - Alvo arquitetural: modelo local-first com 3 aplicações (`server-local`, `server-central`, `pdv-desktop`).
 - Alvo interno do `server-local`: `Domain <- Application <- Infrastructure <- Presentation`.
-- Estado atual: estrutura de módulos e documentação arquitetural consolidadas; implementação funcional ainda em início.
+- Estado atual: estrutura de módulos e documentação arquitetural consolidadas; implementação funcional iniciada pelos Value Objects do domínio no `server-local`.
 - Referências: `docs/ARCHITECTURE.md` e ADRs em `docs/ADR/`.
 
 ### 3A.2 Stack tecnológico completo
@@ -88,8 +88,9 @@ Template:
 - `server-local`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
-  - Models implementados: `Money` (factory + operações `plus`, `minus`, `times(Quantity)`, `max`, `compareTo`, `isNegative`, `isZero`) e `DomainValidationException`.
-  - Models planejados V1: `Sale`, `SaleItem`, `Product`, `Stock`, `Quantity`, `Percentage`, `PaymentMethod`.
+  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod` e `DomainValidationException`.
+  - Cobertura atual de testes de domínio: contratos dos quatro Value Objects do V1.
+  - Models planejados V1: `Sale`, `SaleItem`, `Product`, `Stock`.
 - `server-central`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
@@ -150,9 +151,9 @@ Construir domínio puro no `server-local` com testes, sem dependência de framew
 
 ## 5. Próximos Passos Imediatos
 
-1. Implementar `Quantity`, `Percentage` e `PaymentMethod`.
-2. Implementar `Sale` com transições de estado explícitas.
-3. Implementar `Product`, `SaleItem` e `Stock`.
+1. Implementar `Product`.
+2. Implementar `SaleItem` e `Stock`.
+3. Implementar `Sale` com transições de estado explícitas.
 4. Cobrir invariantes críticas com JUnit.
 
 ---

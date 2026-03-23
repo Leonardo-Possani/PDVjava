@@ -150,9 +150,14 @@ Invariantes:
 
 ### Observações de Contrato dos VOs Já Implementados
 
-`Quantity` e `Percentage` já possuem implementação inicial no `server-local` e devem ser tratados como VOs de proteção de invariantes, não como tipos primitivos expostos diretamente na regra de negócio.
+`Money`, `Quantity`, `Percentage` e `PaymentMethod` já possuem implementação inicial no `server-local` e devem ser tratados como tipos de domínio explícitos, não como primitivos soltos na regra de negócio.
 
 Contratos já validados por testes:
+- `Money`
+  - rejeita `null` na criação
+  - normaliza escala monetária para 2 casas com `HALF_UP`
+  - permite soma, subtração, multiplicação por `Quantity` e `max`
+  - permite inspeção por `isNegative` e `isZero`
 - `Quantity`
   - cria valor válido quando `value > 0`
   - rejeita `0`
@@ -165,9 +170,14 @@ Contratos já validados por testes:
   - rejeita valor negativo
   - rejeita valor acima de `100`
   - permite comparação entre instâncias válidas
+- `PaymentMethod`
+  - expõe conjunto fechado de métodos suportados: `CASH`, `DEBIT`, `CREDIT`, `PIX`
+  - permite resolução nominal via `valueOf`
+  - rejeita valor textual desconhecido
+  - rejeita `null` conforme comportamento padrão de enum Java
 
 ### PaymentMethod
-- enum: `CASH`, `DEBIT`, `CREDIT`
+- enum: `CASH`, `DEBIT`, `CREDIT`, `PIX`
 
 ---
 

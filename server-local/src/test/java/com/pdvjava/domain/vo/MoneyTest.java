@@ -189,4 +189,28 @@ class MoneyTest {
 
     assertEquals(0, result.compareTo(expected));
   }
+
+  @Test
+  void should_return_normalized_amount_when_value_is_called() {
+    Money value = Money.of(new BigDecimal("2.25789"));
+
+    assertEquals(2, value.value().scale());
+    assertEquals(new BigDecimal("2.26"), value.value());
+  }
+
+  @Test
+  void should_return_amount_normalized_with_scale_two_when_value_is_called() {
+    Money value = Money.of(new BigDecimal("5"));
+
+    assertEquals(new BigDecimal("5.00"), value.value());
+  }
+
+  @Test
+  void should_return_zero_amount_with_scale_two_when_value_is_called() {
+    Money value = Money.of(BigDecimal.ZERO);
+
+    assertEquals(0, value.value().compareTo(new BigDecimal("0.00")));
+    assertEquals(2, value.value().scale());
+  }
+
 }

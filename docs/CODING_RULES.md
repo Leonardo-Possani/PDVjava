@@ -152,15 +152,15 @@ Formato recomendado:
 
 ## 10. Convenção de Pacotes
 
-Estrutura base recomendada no `server-local`:
+Estrutura base vigente no `server-local`:
 
-- `com.pdvjava.serverlocal.domain.model`
-- `com.pdvjava.serverlocal.domain.vo`
-- `com.pdvjava.serverlocal.domain.exception`
-- `com.pdvjava.serverlocal.application.usecase`
-- `com.pdvjava.serverlocal.application.port`
-- `com.pdvjava.serverlocal.infrastructure.persistence`
-- `com.pdvjava.serverlocal.presentation.rest`
+- `com.pdvjava.domain.model`
+- `com.pdvjava.domain.vo`
+- `com.pdvjava.domain.exception`
+- `com.pdvjava.application.usecase`
+- `com.pdvjava.application.port`
+- `com.pdvjava.infrastructure.persistence`
+- `com.pdvjava.presentation.rest`
 
 Regra:
 - camada externa não pode ser importada pela camada interna.

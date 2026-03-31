@@ -56,6 +56,10 @@ public final class Money implements Comparable<Money> {
     return Money.of(this.amount.max(other.amount));
   }
 
+  public BigDecimal value() {
+    return amount;
+  }
+
   @Override
   public int compareTo(Money other) {
     if (other == null) {

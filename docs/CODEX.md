@@ -100,6 +100,17 @@ Template:
   - Jobs locais: não implementados.
   - Models locais: não implementados ainda.
 
+### 3A.5A Convenção de pacotes vigente no código
+
+- O `server-local` adota atualmente pacotes raiz em `com.pdvjava.*`.
+- Domínio implementado até aqui:
+  - `com.pdvjava.domain.vo`
+  - `com.pdvjava.domain.exception`
+  - `com.pdvjava.domain.model`
+- Regra operacional:
+  - a documentação deve acompanhar a estrutura vigente do código
+  - não manter árvores vazias paralelas como `com.pdvjava.serverlocal.*`
+
 ### 3A.6 Common hurdles (com soluções documentadas)
 
 - Misturar regra crítica em camada errada.
@@ -111,7 +122,7 @@ Template:
 - Divergência entre implementação e documentação.
   - Solução: atualizar `CODEX`, modelo de domínio e ADR ao fim de cada ciclo/fase.
 - Regressão de nomenclatura de pacote para Value Objects.
-  - Solução: padrão oficial consolidado em `domain/vo`; não recriar variações como `domain/valueobject`.
+  - Solução: padrão oficial consolidado em `com.pdvjava.domain.vo`; não recriar variações paralelas no `server-local`.
 - Estrutura criada sem código correspondente.
   - Solução: evitar considerar pacote criado como funcionalidade pronta; validar por testes e classes concretas.
 

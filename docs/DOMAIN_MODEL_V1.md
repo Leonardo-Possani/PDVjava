@@ -118,6 +118,7 @@ Invariantes:
 - arredondamento `HALF_UP`
 - comparação via `compareTo`
 - operações: `plus(Money)`, `minus(Money)`, `times(Quantity)`, `max(Money)`, `isNegative`, `isZero`
+- expõe `value()` para leitura do valor monetário já normalizado
 
 ### Quantity
 - representa quantidade inteira de item
@@ -158,6 +159,7 @@ Contratos já validados por testes:
   - normaliza escala monetária para 2 casas com `HALF_UP`
   - permite soma, subtração, multiplicação por `Quantity` e `max`
   - permite inspeção por `isNegative` e `isZero`
+  - expõe `value()` retornando `BigDecimal` já normalizado com escala monetária do domínio
 - `Quantity`
   - cria valor válido quando `value > 0`
   - rejeita `0`

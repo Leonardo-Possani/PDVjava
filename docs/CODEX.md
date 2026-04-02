@@ -461,3 +461,31 @@ Use este bloco ao final de cada sessão:
 
 - Instrução de retorno (prompt padrão):
   - "Leia `docs/CODEX.md`, `docs/DOMAIN_ROADMAP.md`, `docs/DOMAIN_MODEL_V1.md`, `docs/CODING_RULES.md` e `docs/DOMAIN_DISCOVERY.md` e inicie o próximo ciclo pela microfatia `ProductId`."
+
+---
+
+## 18. Fechamento de Sessão — 2026-04-02
+
+- Concluído:
+  - leitura e revalidação do contexto operacional em `CODEX`, `DOMAIN_ROADMAP`, `DOMAIN_MODEL_V1`, `CODING_RULES` e `DOMAIN_DISCOVERY`
+  - execução da microfatia `ProductId` no `server-local`
+  - implementação de `ProductId` como Value Object com factory `of(Long)`, leitura por `value()` e igualdade semântica por valor
+  - inclusão de testes cobrindo criação válida, `null`, zero, negativo e igualdade/diferença entre identificadores
+  - commit local da microfatia `ProductId`: `d3d53ca` (`feat(domain): add ProductId value object`)
+  - registro documental do fechamento da fatia anterior de `Money`: `d1ea808` (`docs(project): record money slice session closure`)
+
+- Pendências:
+  - iniciar a fatia `Product`
+  - definir a API mínima de criação de `Product` com `ProductId`, `name` e `unitPrice`
+  - implementar testes de `Product` antes da classe
+
+- Riscos ativos:
+  - risco de expandir a fatia `Product` para `Stock` na mesma sessão
+  - risco de deixar `Product` com identidade fraca ou campos com visibilidade indevida
+  - risco de introduzir validações implícitas em vez de invariantes explícitas na entidade
+
+- Próximo passo recomendado:
+  - abrir a microfatia `Product` com contrato mínimo: criação válida, `productId` obrigatório, `name` não nulo/não vazio e `unitPrice` maior que zero
+
+- Instrução de retorno (prompt padrão):
+  - "Leia `docs/CODEX.md`, `docs/DOMAIN_ROADMAP.md`, `docs/DOMAIN_MODEL_V1.md`, `docs/CODING_RULES.md` e `docs/DOMAIN_DISCOVERY.md` e inicie o próximo ciclo pela microfatia `Product`."

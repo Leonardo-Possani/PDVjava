@@ -106,6 +106,13 @@ Invariantes:
 - identificador forte de produto (semântica de domínio)
 - não pode ser nulo
 - valor deve ser positivo
+- base `Long`
+- criação via factory `ProductId.of(Long value)`
+- expõe `value()` para leitura do identificador
+- igualdade semântica baseada no valor do identificador
+- mensagens de erro atuais:
+  - `DomainValidationException("product id cannot be null")`
+  - `DomainValidationException("product id must be greater than zero")`
 
 ### SaleId
 - identificador forte de venda (semântica de domínio)
@@ -151,7 +158,7 @@ Invariantes:
 
 ### Observações de Contrato dos VOs Já Implementados
 
-`Money`, `Quantity`, `Percentage` e `PaymentMethod` já possuem implementação inicial no `server-local` e devem ser tratados como tipos de domínio explícitos, não como primitivos soltos na regra de negócio.
+`Money`, `Quantity`, `Percentage`, `PaymentMethod` e `ProductId` já possuem implementação inicial no `server-local` e devem ser tratados como tipos de domínio explícitos, não como primitivos soltos na regra de negócio.
 
 Contratos já validados por testes:
 - `Money`
@@ -177,6 +184,13 @@ Contratos já validados por testes:
   - permite resolução nominal via `valueOf`
   - rejeita valor textual desconhecido
   - rejeita `null` conforme comportamento padrão de enum Java
+- `ProductId`
+  - cria valor válido quando `value > 0`
+  - rejeita `null`
+  - rejeita `0`
+  - rejeita valor negativo
+  - expõe `value()` retornando o identificador tipado do produto
+  - implementa igualdade semântica e `hashCode()` com base no valor
 
 ### PaymentMethod
 - enum: `CASH`, `DEBIT`, `CREDIT`, `PIX`

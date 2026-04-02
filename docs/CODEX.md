@@ -433,3 +433,31 @@ Use este bloco ao final de cada sessão:
 
 - Instrução de retorno (prompt padrão):
   - "Leia `docs/CODEX.md`, `docs/DOMAIN_ROADMAP.md`, `docs/DOMAIN_MODEL_V1.md`, `docs/CODING_RULES.md` e `docs/DOMAIN_DISCOVERY.md` e inicie o próximo ciclo pela fatia definida no próximo passo recomendado."
+
+---
+
+## 17. Fechamento de Sessão — 2026-03-31
+
+- Concluído:
+  - revisão dos Value Objects implementados em `domain/vo`
+  - consolidação documental da estrutura vigente de pacotes do `server-local` em `com.pdvjava.*`
+  - remoção de árvore vazia paralela `com.pdvjava.serverlocal.*`
+  - evolução do contrato de `Money` para expor `value()` com retorno monetário normalizado
+  - inclusão de testes de `Money` cobrindo leitura do valor normalizado e escala monetária
+  - commit local da fatia de `Money`: `7f5c281` (`feat(domain): expose money normalized value`)
+
+- Pendências:
+  - iniciar a microfatia `ProductId`
+  - após `ProductId`, iniciar a fatia `Product`
+  - definir se `SaleId` será implementado logo após `ProductId` ou apenas quando `Sale` começar
+
+- Riscos ativos:
+  - risco de expandir escopo de `ProductId` para `Product` na mesma sessão
+  - risco de criar identidade fraca com primitivo solto se `Product` avançar sem `ProductId`
+  - risco de divergência entre documentação e código se novas APIs de VO forem adicionadas sem atualizar o modelo
+
+- Próximo passo recomendado:
+  - abrir a microfatia `ProductId` com contrato, testes planejados e implementação mínima
+
+- Instrução de retorno (prompt padrão):
+  - "Leia `docs/CODEX.md`, `docs/DOMAIN_ROADMAP.md`, `docs/DOMAIN_MODEL_V1.md`, `docs/CODING_RULES.md` e `docs/DOMAIN_DISCOVERY.md` e inicie o próximo ciclo pela microfatia `ProductId`."

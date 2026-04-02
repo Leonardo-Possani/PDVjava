@@ -212,5 +212,4 @@ class MoneyTest {
     assertEquals(0, value.value().compareTo(new BigDecimal("0.00")));
     assertEquals(2, value.value().scale());
   }
-
 }

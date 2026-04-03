@@ -47,8 +47,25 @@ Atributos mínimos:
 - `unitPrice: Money`
 
 Invariantes:
-- `name` não vazio
+- `productId` não pode ser nulo
+- `name` não pode ser nulo
+- `name` não pode ser vazio/em branco após normalização com `trim()`
+- `name` é armazenado já normalizado sem espaços nas extremidades
 - `unitPrice > 0`
+- `unitPrice` não pode ser nulo
+
+Contrato implementado no `server-local`:
+- criação via `Product.of(ProductId productId, String name, Money unitPrice)`
+- classe imutável com leitura por:
+  - `productId()`
+  - `name()`
+  - `unitPrice()`
+- mensagens de erro atuais:
+  - `DomainValidationException("product id cannot be null")`
+  - `DomainValidationException("product name cannot be null")`
+  - `DomainValidationException("product name cannot be blank")`
+  - `DomainValidationException("product unit price cannot be null")`
+  - `DomainValidationException("product unit price must be greater than zero")`
 
 ### 2. Stock
 
@@ -158,7 +175,7 @@ Invariantes:
 
 ### Observações de Contrato dos VOs Já Implementados
 
-`Money`, `Quantity`, `Percentage`, `PaymentMethod` e `ProductId` já possuem implementação inicial no `server-local` e devem ser tratados como tipos de domínio explícitos, não como primitivos soltos na regra de negócio.
+`Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId` e `Product` já possuem implementação inicial no `server-local` e devem ser tratados como tipos de domínio explícitos, não como primitivos soltos na regra de negócio.
 
 Contratos já validados por testes:
 - `Money`
@@ -191,6 +208,15 @@ Contratos já validados por testes:
   - rejeita valor negativo
   - expõe `value()` retornando o identificador tipado do produto
   - implementa igualdade semântica e `hashCode()` com base no valor
+- `Product`
+  - cria entidade válida quando `productId`, `name` e `unitPrice` respeitam as invariantes
+  - rejeita `productId` nulo
+  - rejeita `name` nulo
+  - rejeita `name` em branco após `trim()`
+  - normaliza `name` com `trim()` antes de persistir o estado interno
+  - rejeita `unitPrice` nulo
+  - rejeita `unitPrice` zero
+  - rejeita `unitPrice` negativo
 
 ### PaymentMethod
 - enum: `CASH`, `DEBIT`, `CREDIT`, `PIX`

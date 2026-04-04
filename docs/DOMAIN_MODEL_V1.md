@@ -65,7 +65,8 @@ Contrato implementado no `server-local`:
   - `DomainValidationException("product name cannot be null")`
   - `DomainValidationException("product name cannot be blank")`
   - `DomainValidationException("product unit price cannot be null")`
-  - `DomainValidationException("product unit price must be greater than zero")`
+  - `DomainValidationException("product unit price cannot be zero")`
+  - `DomainValidationException("product unit price cannot be negative")`
 
 ### 2. Stock
 
@@ -93,6 +94,30 @@ Atributos mínimos:
 Invariantes:
 - `quantity > 0`
 - `unitPrice > 0`
+- `productId` não pode ser nulo
+- `productName` não pode ser nulo
+- `productName` não pode ser vazio/em branco após normalização com `trim()`
+- `productName` é armazenado já normalizado sem espaços nas extremidades
+- `unitPrice` não pode ser nulo
+- `quantity` não pode ser nula
+
+Contrato implementado no `server-local`:
+- criação via `SaleItem.of(ProductId productId, String productName, Money unitPrice, Quantity quantity)`
+- classe imutável com leitura por:
+  - `productId()`
+  - `productName()`
+  - `unitPrice()`
+  - `quantity()`
+  - `lineTotal()`
+- `lineTotal` é calculado internamente por `unitPrice.times(quantity)`
+- mensagens de erro atuais:
+  - `DomainValidationException("sale item product id cannot be null")`
+  - `DomainValidationException("sale item product name cannot be null")`
+  - `DomainValidationException("sale item product name cannot be blank")`
+  - `DomainValidationException("sale item unit price cannot be null")`
+  - `DomainValidationException("sale item unit price cannot be zero")`
+  - `DomainValidationException("sale item unit price cannot be negative")`
+  - `DomainValidationException("sale item quantity cannot be null")`
 
 ### 4. Sale
 
@@ -217,6 +242,17 @@ Contratos já validados por testes:
   - rejeita `unitPrice` nulo
   - rejeita `unitPrice` zero
   - rejeita `unitPrice` negativo
+- `SaleItem`
+  - cria entidade válida quando `productId`, `productName`, `unitPrice` e `quantity` respeitam as invariantes
+  - rejeita `productId` nulo
+  - rejeita `productName` nulo
+  - rejeita `productName` em branco após `trim()`
+  - normaliza `productName` com `trim()` antes de persistir o estado interno
+  - rejeita `unitPrice` nulo
+  - rejeita `unitPrice` zero
+  - rejeita `unitPrice` negativo
+  - rejeita `quantity` nula
+  - calcula `lineTotal()` internamente a partir de `unitPrice * quantity`
 
 ### PaymentMethod
 - enum: `CASH`, `DEBIT`, `CREDIT`, `PIX`

@@ -18,16 +18,22 @@ public final class Product {
   public static Product of(ProductId productId, String name, Money unitPrice) {
     if (productId == null) {
       throw new DomainValidationException("product id cannot be null");
-    } else if (name == null) {
+    }
+    if (name == null) {
       throw new DomainValidationException("product name cannot be null");
     }
     name = name.trim();
     if (name.isBlank()) {
       throw new DomainValidationException("product name cannot be blank");
-    } else if (unitPrice == null) {
+    }
+    if (unitPrice == null) {
       throw new DomainValidationException("product unit price cannot be null");
-    } else if (unitPrice.isNegative() || unitPrice.isZero()) {
-      throw new DomainValidationException("product unit price must be greater than zero");
+    }
+    if (unitPrice.isZero()) {
+      throw new DomainValidationException("product unit price cannot be zero");
+    }
+    if (unitPrice.isNegative()) {
+      throw new DomainValidationException("product unit price cannot be negative");
     }
     return new Product(productId, name, unitPrice);
   }

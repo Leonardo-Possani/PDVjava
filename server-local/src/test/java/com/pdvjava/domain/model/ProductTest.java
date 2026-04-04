@@ -68,7 +68,7 @@ class ProductTest {
     DomainValidationException exception =
         assertThrows(
             DomainValidationException.class, () -> Product.of(productId, "Coffe", unitPrice));
-    assertEquals("product unit price must be greater than zero", exception.getMessage());
+    assertEquals("product unit price cannot be zero", exception.getMessage());
   }
 
   @Test
@@ -79,6 +79,6 @@ class ProductTest {
     DomainValidationException exception =
         assertThrows(
             DomainValidationException.class, () -> Product.of(productId, "Coffe", unitPrice));
-    assertEquals("product unit price must be greater than zero", exception.getMessage());
+    assertEquals("product unit price cannot be negative", exception.getMessage());
   }
 }

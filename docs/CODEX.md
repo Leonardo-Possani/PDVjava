@@ -22,6 +22,7 @@ PDVjava é um sistema de ponto de venda local-first para pequenos estabeleciment
 - Modelo inicial de domínio definido (`docs/DOMAIN_MODEL_V1.md`).
 - Roadmap de execução alinhado em `docs/DOMAIN_ROADMAP.md`.
 - Implementação do domínio iniciada no `server-local`, com `Value Objects`, `Product` e testes de domínio.
+- Implementação do domínio expandida no `server-local` com `SaleItem` e testes de domínio da entidade.
 
 ---
 
@@ -88,9 +89,9 @@ Template:
 - `server-local`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
-  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `Product` e `DomainValidationException`.
-  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados e da entidade `Product`.
-  - Models planejados V1 ainda pendentes: `Sale`, `SaleItem`, `Stock`, `SaleId` e `SaleStatus`.
+  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `Product`, `SaleItem` e `DomainValidationException`.
+  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados e das entidades `Product` e `SaleItem`.
+  - Models planejados V1 ainda pendentes: `Sale`, `Stock`, `SaleId` e `SaleStatus`.
 - `server-central`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
@@ -166,6 +167,12 @@ Construir domínio puro no `server-local` com testes, sem dependência de framew
 2. Implementar `Stock`.
 3. Implementar `SaleId`, `SaleStatus` e `Sale` com transições de estado explícitas.
 4. Expandir a cobertura das invariantes críticas com JUnit.
+
+Próxima fatia lógica recomendada:
+1. `Stock`
+   - consolidar disponibilidade por `ProductId`
+   - proteger saldo contra ausência de produto e quantidade insuficiente
+   - preparar a base para a futura consistência entre `Sale` e estoque
 
 ---
 

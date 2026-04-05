@@ -197,6 +197,12 @@ Regra:
 6. Documentação atualizada (`CODEX`, `MODEL`, ADR quando aplicável).
 7. Commit no padrão definido em `README.md`.
 8. Ciclo profissional seguido e registrado.
+9. Título do PR no padrão `<type>(<layer>/<scope>): <imperative short message>`.
+10. Descrição do PR contendo: `Context`, `What changed`, `Why`, `Rules and invariants covered`, `Tests` e `Impact`.
+11. Seção `Impact` do PR preenchida com:
+- `Domain impact`
+- `Architectural impact`
+- `Breaking change: yes/no`
 
 ---
 

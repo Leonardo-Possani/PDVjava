@@ -23,6 +23,7 @@ PDVjava é um sistema de ponto de venda local-first para pequenos estabeleciment
 - Roadmap de execução alinhado em `docs/DOMAIN_ROADMAP.md`.
 - Implementação do domínio iniciada no `server-local`, com `Value Objects`, `Product` e testes de domínio.
 - Implementação do domínio expandida no `server-local` com `SaleItem` e testes de domínio da entidade.
+- Micro-fatia de domínio concluída com `StockBalance` e testes dedicados para saldo de estoque `>= 0`.
 
 ---
 
@@ -48,7 +49,7 @@ Quando o projeto escalar, cada bloco poderá ser extraído para documentos dedic
 
 - Alvo arquitetural: modelo local-first com 3 aplicações (`server-local`, `server-central`, `pdv-desktop`).
 - Alvo interno do `server-local`: `Domain <- Application <- Infrastructure <- Presentation`.
-- Estado atual: estrutura de módulos e documentação arquitetural consolidadas; implementação funcional iniciada pelos Value Objects do domínio no `server-local` e pela primeira entidade (`Product`).
+- Estado atual: estrutura de módulos e documentação arquitetural consolidadas; implementação funcional iniciada pelos Value Objects do domínio no `server-local`, pelas entidades `Product` e `SaleItem`, e pela micro-fatia `StockBalance` para suportar o futuro `Stock`.
 - Referências: `docs/ARCHITECTURE.md` e ADRs em `docs/ADR/`.
 
 ### 3A.2 Stack tecnológico completo
@@ -89,8 +90,8 @@ Template:
 - `server-local`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
-  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `Product`, `SaleItem` e `DomainValidationException`.
-  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados e das entidades `Product` e `SaleItem`.
+  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `StockBalance`, `Product`, `SaleItem` e `DomainValidationException`.
+  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados, incluindo `StockBalance`, e das entidades `Product` e `SaleItem`.
   - Models planejados V1 ainda pendentes: `Sale`, `Stock`, `SaleId` e `SaleStatus`.
 - `server-central`
   - Serviços/API: não implementados ainda.
@@ -153,7 +154,7 @@ Template:
 
 Construir domínio puro no `server-local` com testes, sem dependência de framework:
 
-- Value Objects: `Money`, `Quantity`, `Percentage`, `PaymentMethod`
+- Value Objects: `Money`, `Quantity`, `Percentage`, `PaymentMethod` e `StockBalance`
 - Entidades iniciais: `Sale`, `SaleItem`, `Product`, `Stock`
 - Invariantes críticas de venda, pagamento e estoque
 - Testes unitários de domínio como documentação executável
@@ -163,14 +164,13 @@ Construir domínio puro no `server-local` com testes, sem dependência de framew
 
 ## 5. Próximos Passos Imediatos
 
-1. Implementar `SaleItem`.
-2. Implementar `Stock`.
-3. Implementar `SaleId`, `SaleStatus` e `Sale` com transições de estado explícitas.
-4. Expandir a cobertura das invariantes críticas com JUnit.
+1. Implementar `Stock`.
+2. Implementar `SaleId`, `SaleStatus` e `Sale` com transições de estado explícitas.
+3. Expandir a cobertura das invariantes críticas com JUnit.
 
 Próxima fatia lógica recomendada:
 1. `Stock`
-   - consolidar disponibilidade por `ProductId`
+   - usar `StockBalance` para modelar saldo por `ProductId`, incluindo saldo zero
    - proteger saldo contra ausência de produto e quantidade insuficiente
    - preparar a base para a futura consistência entre `Sale` e estoque
 

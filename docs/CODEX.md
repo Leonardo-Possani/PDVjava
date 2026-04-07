@@ -91,9 +91,9 @@ Template:
 - `server-local`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
-  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `StockBalance`, `Product`, `SaleItem`, `Stock` e `DomainValidationException`.
-  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados, incluindo `StockBalance`, e das entidades `Product`, `SaleItem` e `Stock`.
-  - Models planejados V1 ainda pendentes: `Sale`, `SaleId` e `SaleStatus`.
+  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `SaleId`, `SaleStatus`, `StockBalance`, `Product`, `SaleItem`, `Stock` e `DomainValidationException`.
+  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados, incluindo `StockBalance`, `SaleId` e `SaleStatus`, e das entidades `Product`, `SaleItem` e `Stock`.
+  - Models planejados V1 ainda pendentes: `Sale`.
 - `server-central`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
@@ -167,13 +167,12 @@ Construir domínio puro no `server-local` com testes, sem dependência de framew
 
 ## 5. Próximos Passos Imediatos
 
-1. Implementar `SaleId`, `SaleStatus` e `Sale` com transições de estado explícitas.
+1. Implementar `Sale` com transições de estado explícitas usando `SaleId` e `SaleStatus`.
 2. Expandir a cobertura das invariantes críticas com JUnit para o fluxo de venda e pagamento.
 3. Preparar a futura consistência entre `Sale` e `Stock` no aggregate de venda.
 
 Próxima fatia lógica recomendada:
 1. `Sale`
-   - introduzir `SaleId` e `SaleStatus`
    - proteger transições de estado explícitas
    - validar itens obrigatórios, pagamento e consistência com o total final
 

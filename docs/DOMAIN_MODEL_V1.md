@@ -175,6 +175,18 @@ Invariantes:
 - identificador forte de venda (semântica de domínio)
 - não pode ser nulo
 - valor deve ser positivo
+- criação via factory `SaleId.of(Long value)`
+- expõe `value()` para leitura do identificador
+- igualdade semântica baseada no valor do identificador
+- mensagens de erro atuais:
+  - `DomainValidationException("sale id cannot be null")`
+  - `DomainValidationException("sale id must be greater than zero")`
+
+### SaleStatus
+- enum de estados explícitos da venda
+- estados implementados no `server-local`:
+  - `OPEN`
+  - `PAID`
 
 ### Money
 - base `BigDecimal`

@@ -74,12 +74,27 @@ Identidade:
 - coleção de saldo por `ProductId`
 
 Atributos mínimos:
-- `entries: Map<ProductId, Quantity>`
+- `entries: Map<ProductId, StockBalance>`
 
 Invariantes:
-- `ProductId` único
+- `Stock` recebe entradas já normalizadas por `ProductId`
 - nenhuma quantidade negativa
 - produto vendido deve existir no estoque
+
+Contrato implementado no `server-local`:
+- criação via `Stock.of(Map<ProductId, StockBalance> entries)`
+- classe imutável com leitura por:
+  - `contains(ProductId productId)`
+  - `balanceOf(ProductId productId)`
+  - `decrease(ProductId productId, Quantity quantity)`
+- `decrease` retorna nova instância de `Stock`
+- a unicidade de `ProductId` é garantida antes da materialização do domínio, na persistência e na infraestrutura que monta o `Map`
+- mensagens de erro atuais:
+  - `DomainValidationException("stock entries cannot be null")`
+  - `DomainValidationException("stock product id cannot be null")`
+  - `DomainValidationException("stock balance cannot be null")`
+  - `DomainValidationException("product not found in stock")`
+  - `DomainValidationException("quantity cannot be null")`
 
 ### 3. SaleItem
 
@@ -181,6 +196,25 @@ Invariantes:
 - mensagem de erro atual na criação inválida:
   `DomainValidationException("quantity must be greater than zero")`
 
+### StockBalance
+- representa saldo de estoque por produto
+- base `int`
+- criação via factory `StockBalance.of(int value)`
+- aceita `0` e valores positivos
+- rejeita valor negativo
+- expõe `value()` para leitura do saldo atual
+- implementa `compareTo`
+- operações:
+  - `plus(Quantity quantity)`
+  - `minus(Quantity quantity)`
+  - `isZero()`
+- comparar com `null` deve gerar `DomainValidationException`
+- mensagens de erro atuais:
+  - `DomainValidationException("stock balance cannot be negative")`
+  - `DomainValidationException("quantity cannot be null")`
+  - `DomainValidationException("stock balance cannot be negative after subtraction")`
+  - `DomainValidationException("stock balance to compare cannot be null")`
+
 ### Percentage
 - faixa fechada de `0` a `100`
 - base `BigDecimal`
@@ -200,7 +234,7 @@ Invariantes:
 
 ### Observações de Contrato dos VOs Já Implementados
 
-`Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId` e `Product` já possuem implementação inicial no `server-local` e devem ser tratados como tipos de domínio explícitos, não como primitivos soltos na regra de negócio.
+`Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `StockBalance`, `Product` e `SaleItem` já possuem implementação inicial no `server-local` e devem ser tratados como tipos de domínio explícitos, não como primitivos soltos na regra de negócio.
 
 Contratos já validados por testes:
 - `Money`
@@ -213,6 +247,16 @@ Contratos já validados por testes:
   - cria valor válido quando `value > 0`
   - rejeita `0`
   - rejeita valor negativo
+- `StockBalance`
+  - cria saldo válido quando `value >= 0`
+  - aceita `0` como estado válido de saldo
+  - rejeita valor negativo
+  - permite soma com `Quantity`
+  - permite subtração com `Quantity` quando o resultado permanece `>= 0`
+  - rejeita subtração que produziria saldo negativo
+  - permite comparação entre instâncias válidas
+  - rejeita comparação com `null`
+  - permite inspeção por `isZero()`
 - `Percentage`
   - aceita `0.00`
   - aceita `100.00`

@@ -153,6 +153,65 @@ Impact:
 - Every behavioral change must include or update tests
 - Large refactors should be split into smaller logical commits
 
+## Pull Request Pattern - PDVjava
+
+All Pull Requests must be written in English and follow a consistent structure focused on domain intent, affected rule, and architectural impact.
+
+### PR Title Format
+
+```text
+<type>(<layer>/<scope>): <imperative short message>
+```
+
+Example:
+
+```text
+feat(domain/produto): implement Product entity invariants in server-local
+```
+
+### PR Description Format
+
+```text
+## Context
+
+Short explanation of the domain or technical motivation behind the change.
+
+## What changed
+
+- Main implementation points
+- Relevant validations, rules, or contracts introduced
+- Important structural choices
+
+## Why
+
+Why this change is necessary now and what part of the roadmap or domain it supports.
+
+## Rules and invariants covered
+
+- Explicit business rules or invariants protected by this PR
+
+## Tests
+
+- Tests added or updated
+- Relevant valid, invalid, and edge scenarios covered
+
+## Impact
+
+- Domain impact:
+- Architectural impact:
+- Breaking change: yes/no
+```
+
+### PR Rules
+
+- One PR must preserve a single clear architectural intention
+- The PR title should follow the same convention as the commit header
+- The description must explain both what changed and why
+- Every domain behavior change must mention the rule or invariant being protected
+- Every behavioral change must mention the tests that validate it
+- The `Impact` section is mandatory in all PRs
+- Prefer small and reviewable PRs over mixed-scope changes
+
 ### Purpose
 
 This pattern enforces:
@@ -163,4 +222,4 @@ This pattern enforces:
 - Professional development discipline
 - Historical readability for future maintainers
 
-This convention is mandatory for all contributions to the project.
+This convention is mandatory for all commits and Pull Requests in the project.

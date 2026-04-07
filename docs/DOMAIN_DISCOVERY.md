@@ -154,10 +154,10 @@ Regra `ROBUST-001`:
 - Erro esperado: `DomainValidationException("value exceeds allowed limit")`.
 
 Regra `ROBUST-002`:
-- Regra: unicidade de `ProductId` no estoque.
-- Entrada: coleção de produtos de estoque.
-- Validação: IDs não repetidos.
-- Erro esperado: `DomainValidationException("duplicated product id in stock")`.
+- Regra: o domínio `Stock` recebe entradas já normalizadas por `ProductId`.
+- Entrada: `Map<ProductId, StockBalance>` materializado pela infraestrutura.
+- Validação: a unicidade de `ProductId` é garantida na persistência e na borda de infraestrutura que monta o `Map`.
+- Erro esperado: não aplicável dentro de `Stock`; inconsistências de duplicidade devem falhar antes da materialização do domínio.
 
 ### P2 — Pós-MVP
 

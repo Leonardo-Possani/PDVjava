@@ -77,9 +77,24 @@ Atributos mínimos:
 - `entries: Map<ProductId, StockBalance>`
 
 Invariantes:
-- `ProductId` único
+- `Stock` recebe entradas já normalizadas por `ProductId`
 - nenhuma quantidade negativa
 - produto vendido deve existir no estoque
+
+Contrato implementado no `server-local`:
+- criação via `Stock.of(Map<ProductId, StockBalance> entries)`
+- classe imutável com leitura por:
+  - `contains(ProductId productId)`
+  - `balanceOf(ProductId productId)`
+  - `decrease(ProductId productId, Quantity quantity)`
+- `decrease` retorna nova instância de `Stock`
+- a unicidade de `ProductId` é garantida antes da materialização do domínio, na persistência e na infraestrutura que monta o `Map`
+- mensagens de erro atuais:
+  - `DomainValidationException("stock entries cannot be null")`
+  - `DomainValidationException("stock product id cannot be null")`
+  - `DomainValidationException("stock balance cannot be null")`
+  - `DomainValidationException("product not found in stock")`
+  - `DomainValidationException("quantity cannot be null")`
 
 ### 3. SaleItem
 

@@ -25,6 +25,7 @@ PDVjava é um sistema de ponto de venda local-first para pequenos estabeleciment
 - Implementação do domínio expandida no `server-local` com `SaleItem` e testes de domínio da entidade.
 - Micro-fatia de domínio concluída com `StockBalance` e testes dedicados para saldo de estoque `>= 0`.
 - Fatia de domínio `Stock` concluída no `server-local`, com entrada normalizada por `Map<ProductId, StockBalance>`, operação de baixa imutável e testes cobrindo presença, consulta de saldo e proteção contra estoque inexistente ou negativo.
+- Decisão de modelagem consolidada: `Cart` passa a existir explicitamente no V1 antes de `Sale`, como agregado persistível e recuperável em estado editável.
 
 ---
 
@@ -50,7 +51,7 @@ Quando o projeto escalar, cada bloco poderá ser extraído para documentos dedic
 
 - Alvo arquitetural: modelo local-first com 3 aplicações (`server-local`, `server-central`, `pdv-desktop`).
 - Alvo interno do `server-local`: `Domain <- Application <- Infrastructure <- Presentation`.
-- Estado atual: estrutura de módulos e documentação arquitetural consolidadas; implementação funcional iniciada pelos Value Objects do domínio no `server-local`, pelas entidades `Product`, `SaleItem` e `Stock`, e pela micro-fatia `StockBalance` como base do saldo de estoque.
+- Estado atual: estrutura de módulos e documentação arquitetural consolidadas; implementação funcional iniciada pelos Value Objects do domínio no `server-local`, pelas entidades `Product`, `SaleItem` e `Stock`, e pela micro-fatia `StockBalance` como base do saldo de estoque. A próxima fatia de domínio passa a ser `Cart`, antecedendo `Sale`.
 - Referências: `docs/ARCHITECTURE.md` e ADRs em `docs/ADR/`.
 
 ### 3A.2 Stack tecnológico completo
@@ -91,9 +92,9 @@ Template:
 - `server-local`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
-  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `SaleId`, `SaleStatus`, `StockBalance`, `Product`, `SaleItem`, `Stock` e `DomainValidationException`.
-  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados, incluindo `StockBalance`, `SaleId` e `SaleStatus`, e das entidades `Product`, `SaleItem` e `Stock`.
-  - Models planejados V1 ainda pendentes: `Sale`.
+  - Models implementados: `Money`, `Quantity`, `Percentage`, `PaymentMethod`, `ProductId`, `SaleId`, `SaleStatus`, `StockBalance`, `CartId`, `CartStatus`, `Product`, `SaleItem`, `Stock`, `Cart` e `DomainValidationException`.
+  - Cobertura atual de testes de domínio: contratos dos Value Objects implementados, incluindo `StockBalance`, `SaleId`, `SaleStatus`, `CartId` e `CartStatus`, e das entidades `Product`, `SaleItem`, `Stock` e do ciclo 1 de `Cart`.
+  - Models planejados V1 ainda pendentes: evolução do `Cart` (ciclos 2 e 3) e `Sale`.
 - `server-central`
   - Serviços/API: não implementados ainda.
   - Jobs: não implementados.
@@ -158,8 +159,8 @@ Template:
 Construir domínio puro no `server-local` com testes, sem dependência de framework:
 
 - Value Objects: `Money`, `Quantity`, `Percentage`, `PaymentMethod` e `StockBalance`
-- Entidades iniciais: `Sale`, `SaleItem`, `Product`, `Stock`
-- Invariantes críticas de venda, pagamento e estoque
+- Entidades iniciais: `Cart`, `Sale`, `SaleItem`, `Product`, `Stock`
+- Invariantes críticas de carrinho, venda, pagamento e estoque
 - Testes unitários de domínio como documentação executável
 - Fora de escopo no V1: `CashRegister` e cancelamento/estorno
 
@@ -167,14 +168,25 @@ Construir domínio puro no `server-local` com testes, sem dependência de framew
 
 ## 5. Próximos Passos Imediatos
 
-1. Implementar `Sale` com transições de estado explícitas usando `SaleId` e `SaleStatus`.
-2. Expandir a cobertura das invariantes críticas com JUnit para o fluxo de venda e pagamento.
-3. Preparar a futura consistência entre `Sale` e `Stock` no aggregate de venda.
+1. Executar o ciclo 2 de `Cart`: merge de quantidade por `ProductId`, remoção de item e recálculo de total.
+2. Executar o ciclo 3 de `Cart`: `startSale()` e bloqueio de mutações após `CHECKOUT_STARTED`.
+3. Implementar `Sale` como agregado transacional derivado de um `Cart` válido já bloqueado para edição.
+4. Expandir a cobertura das invariantes críticas com JUnit para o fluxo `Cart -> Sale -> pagamento`.
+5. Preparar a futura consistência entre `Sale` e `Stock` no fechamento da venda.
 
 Próxima fatia lógica recomendada:
-1. `Sale`
+1. `Cart`
+   - somar quantidade quando o mesmo `ProductId` for adicionado novamente
+   - remover item por `ProductId`
+   - recalcular `totalAmount` após merge e remoção
+   - preservar o carrinho editável como estado persistível/recuperável do fluxo
+2. `Cart`
+   - implementar `startSale()`
+   - bloquear mutações quando o checkout for iniciado
+3. `Sale`
+   - nascer a partir de um `Cart` válido já bloqueado
    - proteger transições de estado explícitas
-   - validar itens obrigatórios, pagamento e consistência com o total final
+   - validar pagamento e consistência com o total final
 
 ---
 
@@ -498,3 +510,40 @@ Use este bloco ao final de cada sessão:
 
 - Instrução de retorno (prompt padrão):
   - "Leia `docs/CODEX.md`, `docs/DOMAIN_ROADMAP.md`, `docs/DOMAIN_MODEL_V1.md`, `docs/CODING_RULES.md` e `docs/DOMAIN_DISCOVERY.md` e inicie o próximo ciclo pela microfatia `Product`."
+
+---
+
+## 19. Fechamento de Sessão — 2026-04-12
+
+- Concluído:
+  - revisão e alinhamento da documentação central para introduzir `Cart` antes de `Sale` no V1
+  - atualização de `DOMAIN_DISCOVERY`, `DOMAIN_MODEL_V1`, `DOMAIN_ROADMAP` e `CODEX` para refletir `Cart` como agregado persistível e recuperável em estado editável
+  - correção de consistência documental em métodos de pagamento (`PIX`) e estados documentados de `Sale`
+  - revisão da implementação inicial de `CartId`, `CartStatus` e `Cart`
+  - validação do ciclo 1 de `Cart` após correção dos findings de review
+  - execução de `mvn -B -ntp -pl server-local test` em verde
+
+- Pendências:
+  - executar o ciclo 2 da fatia `Cart`
+  - implementar merge de quantidade por `ProductId`
+  - implementar remoção de item por `ProductId`
+  - recalcular `totalAmount` nos cenários de merge e remoção
+  - preparar o ciclo 3 com `startSale()` e bloqueio de mutações
+
+- Riscos ativos:
+  - risco de implementar merge de item duplicado sem preservar uma única linha por `ProductId`
+  - risco de recalcular `totalAmount` parcialmente e deixar o agregado inconsistente após remoção
+  - risco de expandir o escopo de `Cart` para `Sale` antes de fechar os ciclos 2 e 3
+
+- Próximo passo recomendado:
+  - abrir a próxima sessão no ciclo 2 de `Cart`, começando pelos testes:
+  - `should_sum_quantity_when_adding_item_with_same_product_id`
+  - `should_keep_single_line_when_adding_item_with_same_product_id`
+  - `should_recalculate_total_amount_when_adding_item_with_same_product_id`
+  - `should_remove_item_when_product_id_exists_in_cart`
+  - `should_recalculate_total_amount_when_removing_item`
+  - `should_return_empty_cart_when_removing_last_item`
+  - `should_throw_exception_when_removing_item_with_null_product_id`
+
+- Instrução de retorno (prompt padrão):
+  - "Leia `docs/CODEX.md`, `docs/DOMAIN_ROADMAP.md`, `docs/DOMAIN_MODEL_V1.md`, `docs/CODING_RULES.md` e `docs/DOMAIN_DISCOVERY.md` e inicie o ciclo 2 da fatia `Cart` pelos testes já definidos."

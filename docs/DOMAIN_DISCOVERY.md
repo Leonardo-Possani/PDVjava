@@ -11,11 +11,12 @@ Contrato alvo Java: `docs/DOMAIN_MODEL_V1.md`.
 ## Escopo V1 (MVP de Domínio)
 
 IN:
+- Carrinho
 - Venda
 - Item de venda
 - Produto
 - Estoque
-- Pagamento (dinheiro, débito, crédito)
+- Pagamento (dinheiro, débito, crédito, pix)
 - Cálculo de total com desconto e taxa
 
 OUT:
@@ -33,7 +34,7 @@ OUT:
 - `preco` -> `Money`
 - `metodo_pagamento` -> `PaymentMethod`
 - `valor_pago` -> `Money` (paid amount)
-- `carrinho` -> `Sale` + `SaleItem` (no fluxo Java)
+- `carrinho` -> `Cart`
 - `venda_fechada` -> `Sale` em estado `PAID`
 - `estoque_atualizado` -> `Stock` após baixa
 - `resultado_venda` -> output de caso de uso (`FinalizeSaleResult`)
@@ -45,17 +46,25 @@ OUT:
 1. Produto
 - item vendável com identidade, nome, preço e quantidade disponível
 
-2. Estoque
+2. Carrinho
+- agregado editável que concentra os itens selecionados antes da venda
+- pode ser persistido e recuperado para continuar edição
+- calcula seu valor total corrente
+- quando o mesmo produto é adicionado novamente, soma quantidade em vez de duplicar linha
+- torna-se imutável quando o processo de venda é iniciado a partir de um carrinho válido
+
+3. Estoque
 - conjunto de produtos e suas quantidades correntes
 
-3. Venda
+4. Venda
 - transação que agrega itens, totais e quitação
+- nasce a partir de um carrinho válido já bloqueado para edição
 
-4. Item de venda
+5. Item de venda
 - produto, quantidade e preço snapshot da venda
 
-5. Método de pagamento
-- enum de formas aceitas: `CREDIT`, `DEBIT`, `CASH`
+6. Método de pagamento
+- enum de formas aceitas: `CREDIT`, `DEBIT`, `CASH`, `PIX`
 
 ---
 
@@ -66,6 +75,38 @@ Formato:
 - `Entrada`
 - `Validação`
 - `Erro esperado`
+
+### P0 — Carrinho
+
+Regra `CART-001`:
+- Regra: carrinho editável pode existir e ser persistido mesmo sem itens.
+- Entrada: estado inicial do carrinho.
+- Validação: carrinho vazio é válido enquanto estiver em modo de edição.
+- Erro esperado: não aplicável.
+
+Regra `CART-002`:
+- Regra: carrinho deve calcular o total corrente como soma de `item.price * item.quantity`.
+- Entrada: itens válidos no carrinho.
+- Validação: total calculado internamente pela entidade.
+- Erro esperado: não aplicável.
+
+Regra `CART-003`:
+- Regra: ao adicionar produto já existente no carrinho, deve somar quantidade em vez de duplicar linha.
+- Entrada: item com `ProductId` já existente no carrinho.
+- Validação: manter uma única linha por `ProductId`.
+- Erro esperado: não aplicável.
+
+Regra `CART-004`:
+- Regra: carrinho pode ser recuperado persistido e continuar editável.
+- Entrada: estado persistido do carrinho.
+- Validação: itens e total devem permanecer consistentes após recuperação.
+- Erro esperado: não aplicável.
+
+Regra `CART-005`:
+- Regra: ao iniciar o processo de venda a partir de um carrinho válido, o carrinho torna-se imutável.
+- Entrada: ação de iniciar venda.
+- Validação: novas mutações no carrinho devem ser bloqueadas após o início do checkout.
+- Erro esperado: `DomainValidationException("cart is not editable")`.
 
 ### P0 — Venda
 
@@ -105,6 +146,12 @@ Regra `SALE-006`:
 - Validação: transições somente permitidas no estado correto.
 - Erro esperado: `DomainValidationException("invalid sale state transition")`.
 
+Regra `SALE-007`:
+- Regra: venda deve nascer a partir de um carrinho válido já bloqueado para edição.
+- Entrada: carrinho em início de checkout.
+- Validação: `Sale` não é o carrinho; ela representa a transação derivada de um `Cart` válido.
+- Erro esperado: `DomainValidationException("sale must be created from a valid cart")`.
+
 ### P0 — Pagamento
 
 Regra `PAY-001`:
@@ -120,7 +167,7 @@ Regra `PAY-002`:
 - Erro esperado: `DomainValidationException("insufficient cash payment")`.
 
 Regra `PAY-003`:
-- Regra: em débito/crédito, valor pago deve ser exatamente igual ao total final.
+- Regra: em débito/crédito/pix, valor pago deve ser exatamente igual ao total final.
 - Entrada: `totalFinal`, `paidAmount`.
 - Validação: `paidAmount.compareTo(totalFinal) == 0`.
 - Erro esperado: `DomainValidationException("non-cash payment must match total amount")`.
@@ -174,15 +221,18 @@ Regra `POST-002`:
 ## Invariantes Consolidadas do V1
 
 1. Estoque nunca pode ficar negativo.
-2. Venda não avança em ordem inválida de estados.
-3. Venda não pode ser finalizada sem pagamento válido.
-4. Quantidade de item é sempre maior que zero.
-5. Resultado de fechamento mantém consistência entre venda e estoque.
+2. Carrinho soma quantidade quando o mesmo produto é adicionado novamente.
+3. Carrinho editável pode ser persistido e recuperado sem perder consistência.
+4. Carrinho iniciado para venda torna-se imutável.
+5. Venda não avança em ordem inválida de estados.
+6. Venda não pode ser finalizada sem pagamento válido.
+7. Quantidade de item é sempre maior que zero.
+8. Resultado de fechamento mantém consistência entre carrinho, venda e estoque.
 
 ---
 
 ## Gap entre legado e alvo Java
 
 1. Legado usa `float`; alvo Java usa `Money` com `BigDecimal`.
-2. Legado usa fluxo procedural; alvo Java usa Aggregate Root e Value Objects.
+2. Legado usa fluxo procedural; alvo Java usa Aggregate Roots (`Cart` e `Sale`) e Value Objects.
 3. Legado tem validações implícitas; alvo Java exige contratos explícitos de erro.

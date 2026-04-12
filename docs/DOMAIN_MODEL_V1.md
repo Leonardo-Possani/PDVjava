@@ -6,6 +6,7 @@ Base de origem: `docs/DOMAIN_DISCOVERY.md`.
 ## Escopo V1
 
 IN:
+- `Cart` (Aggregate Root)
 - `Sale` (Aggregate Root)
 - `SaleItem`
 - `Product`
@@ -18,12 +19,27 @@ OUT:
 
 ---
 
-## Aggregate Root
+## Aggregate Roots
+
+### Cart
+
+`Cart` é o Aggregate Root de montagem da venda e controla:
+- consistência dos itens em edição
+- soma incremental de quantidade por `ProductId`
+- cálculo do total corrente do carrinho
+- bloqueio de edição quando o processo de venda é iniciado
+- persistência e recuperação do estado editável do carrinho
+
+Fica fora do aggregate:
+- pagamento
+- baixa de estoque
+- HTTP/API
+- integração externa
 
 ### Sale
 
-`Sale` é o Aggregate Root de vendas e controla:
-- consistência de itens
+`Sale` é o Aggregate Root transacional criado a partir de um `Cart` válido e controla:
+- consistência final dos itens
 - cálculo de totais
 - sequência de estados da venda
 - validação de pagamento
@@ -131,10 +147,62 @@ Contrato implementado no `server-local`:
   - `DomainValidationException("sale item product name cannot be blank")`
   - `DomainValidationException("sale item unit price cannot be null")`
   - `DomainValidationException("sale item unit price cannot be zero")`
-  - `DomainValidationException("sale item unit price cannot be negative")`
-  - `DomainValidationException("sale item quantity cannot be null")`
+- `DomainValidationException("sale item unit price cannot be negative")`
+- `DomainValidationException("sale item quantity cannot be null")`
 
-### 4. Sale
+### 4. Cart
+
+Identidade:
+- `cartId: CartId`
+
+Atributos mínimos:
+- `items: List<SaleItem>`
+- `status: CartStatus`
+- `totalAmount: Money`
+
+Invariantes:
+- `cartId` não pode ser nulo
+- carrinho pode existir vazio enquanto está editável
+- item no carrinho é identificado por `ProductId`
+- ao adicionar item com `ProductId` já existente, o carrinho deve somar a `quantity` ao item existente em vez de duplicar a linha
+- `totalAmount` é sempre calculado internamente como soma de `lineTotal()` dos itens atuais
+- carrinho editável pode ser persistido e recuperado para continuar edição
+- carrinho iniciado para venda torna-se imutável
+- carrinho imutável não aceita adição, remoção ou alteração de item
+
+Contrato alvo V1:
+- criação via `Cart.of(CartId cartId)`
+- classe de domínio com leitura por:
+  - `cartId()`
+  - `items()`
+  - `status()`
+  - `totalAmount()`
+- operações mínimas esperadas:
+  - `addItem(SaleItem saleItem)`
+  - `removeItem(ProductId productId)`
+  - `startSale()`
+- comportamento obrigatório:
+  - `addItem` soma quantidade quando o `ProductId` já existe no carrinho
+  - `startSale` exige `Cart` válido para venda e bloqueia novas mutações
+  - `startSale` é o ponto de transição para o fluxo transacional que originará `Sale`
+
+Contrato implementado no `server-local` até o momento:
+- `CartId` implementado como Value Object com factory `CartId.of(Long value)`, leitura por `value()` e igualdade semântica por valor
+- `CartStatus` implementado com estados:
+  - `EDITABLE`
+  - `CHECKOUT_STARTED`
+- `Cart` implementado parcialmente com:
+  - criação via `Cart.of(CartId cartId)`
+  - leitura por `cartId()`, `items()`, `status()` e `totalAmount()`
+  - `Cart` nasce vazio, com `totalAmount = 0.00` e `status = EDITABLE`
+  - `addItem(SaleItem saleItem)` já implementado para inclusão de item novo em carrinho editável
+- próximo ciclo pendente em `Cart`:
+  - somar quantidade quando o mesmo `ProductId` for adicionado novamente
+  - remover item por `ProductId`
+  - recalcular total com merge e remoção
+  - iniciar checkout com bloqueio de mutação
+
+### 5. Sale
 
 Identidade:
 - `saleId: SaleId`
@@ -153,6 +221,7 @@ Atributos mínimos:
 Invariantes:
 - venda sem item é inválida
 - item duplicado por `ProductId` é inválido
+- `Sale` nasce a partir de um `Cart` válido já bloqueado para edição
 - venda paga não pode ser alterada
 
 ---
@@ -170,6 +239,20 @@ Invariantes:
 - mensagens de erro atuais:
   - `DomainValidationException("product id cannot be null")`
   - `DomainValidationException("product id must be greater than zero")`
+
+### CartId
+- identificador forte de carrinho (semântica de domínio)
+- não pode ser nulo
+- valor deve ser positivo
+- criação via factory `CartId.of(Long value)`
+- expõe `value()` para leitura do identificador
+- igualdade semântica baseada no valor do identificador
+
+### CartStatus
+- enum de estados explícitos do carrinho
+- estados alvo do V1:
+  - `EDITABLE`
+  - `CHECKOUT_STARTED`
 
 ### SaleId
 - identificador forte de venda (semântica de domínio)
@@ -315,40 +398,50 @@ Contratos já validados por testes:
 
 ---
 
+## Estados do Carrinho e Transições
+
+Estados:
+- `EDITABLE`
+- `CHECKOUT_STARTED`
+
+Transições válidas:
+1. `EDITABLE -> CHECKOUT_STARTED`
+Pré-condição: carrinho válido para iniciar venda.
+
+Regra de proteção:
+- em `EDITABLE`, o carrinho aceita mutações e pode ser persistido/recuperado
+- em `CHECKOUT_STARTED`, o carrinho torna-se imutável
+- qualquer mutação em estado bloqueado gera erro de domínio
+
+---
+
 ## Estados da Venda e Transições
 
 Estados:
-- `CREATED`
-- `DISCOUNT_APPLIED`
-- `TAX_APPLIED`
-- `PAYMENT_REGISTERED`
+- `OPEN`
 - `PAID`
 
 Transições válidas:
-1. `CREATED -> DISCOUNT_APPLIED`
-Pré-condição: venda com itens válidos.
-
-2. `DISCOUNT_APPLIED -> TAX_APPLIED`
-Pré-condição: desconto válido aplicado.
-
-3. `TAX_APPLIED -> PAYMENT_REGISTERED`
-Pré-condição: total final calculado.
-
-4. `PAYMENT_REGISTERED -> PAID`
+1. `OPEN -> PAID`
 Pré-condição: pagamento válido conforme método.
 
 Regra de proteção:
-- qualquer transição fora da ordem gera erro de domínio.
+- em `OPEN`, a venda aceita cálculo de desconto, taxa e registro de pagamento
+- em `PAID`, a venda torna-se imutável
+- qualquer tentativa de mutação em `PAID` gera erro de domínio
 
 ---
 
 ## Regras Críticas do V1
 
 1. `Stock` nunca pode ficar negativo.
-2. `Sale` não pode finalizar sem pagamento válido.
-3. `finalTotal` reflete desconto e taxa.
-4. `Sale` em estado `PAID` é imutável.
-5. todos os valores monetários usam `Money`.
+2. `Cart` soma quantidade quando o mesmo produto é adicionado novamente.
+3. `Cart` editável pode ser persistido e recuperado sem perder consistência.
+4. `Cart` em `CHECKOUT_STARTED` é imutável.
+5. `Sale` não pode finalizar sem pagamento válido.
+6. `finalTotal` reflete desconto e taxa.
+7. `Sale` em estado `PAID` é imutável.
+8. todos os valores monetários usam `Money`.
 
 ---
 
@@ -356,7 +449,7 @@ Regra de proteção:
 
 1. Paradigma e estrutura
 - Python original: funções procedurais com regras distribuídas.
-- PDVjava: modelagem OO com Aggregate Root (`Sale`) e encapsulamento de invariantes.
+- PDVjava: modelagem OO com Aggregate Roots (`Cart` e `Sale`) e encapsulamento de invariantes.
 
 2. Precisão monetária
 - Python original: operações com `float`.
@@ -378,13 +471,14 @@ Regra de proteção:
 
 ## Mapa de Migração (Legado -> Modelo V1)
 
-- `carrinho` -> `Sale` em construção
+- `carrinho` -> `Cart`
 - `item_carrinho` -> `SaleItem`
 - `produto_id` -> `ProductId`
 - `qtd` -> `Quantity`
 - `preco` -> `Money`
 - `metodo_pagamento` -> `PaymentMethod`
 - `valor_pago` -> `paidAmount: Money`
+- `fechamento_venda_a_partir_do_carrinho` -> `Cart.startSale()` seguido da criação de `Sale`
 - `resultado_venda` -> saída de caso de uso (application layer)
 
 ---

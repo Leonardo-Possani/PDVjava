@@ -6,7 +6,8 @@ Este roadmap está alinhado com `docs/ARCHITECTURE.md`.
 ## Escopo do MVP de Domínio (V1)
 
 IN:
-- Venda (`Sale`, `SaleItem`)
+- Carrinho (`Cart`, `SaleItem`)
+- Venda (`Sale`)
 - Estoque (`Product`, `Stock`)
 - Pagamento (`PaymentMethod`)
 - Value Objects (`Money`, `Quantity`, `Percentage`)
@@ -26,7 +27,8 @@ Objetivo:
 Entregáveis:
 - estrutura de pacotes do domínio
 - `Money`, `Quantity`, `Percentage`, `PaymentMethod`
-- `Sale`, `SaleItem`, `Product`, `Stock`
+- `Cart`, `Sale`, `SaleItem`, `Product`, `Stock`
+- regras de edição, totalização e bloqueio do carrinho
 - regras de transição de estado da venda
 - testes unitários cobrindo invariantes críticas
 
@@ -40,6 +42,11 @@ Gate de qualidade:
 - nenhum `float`/`double` no domínio
 - APIs públicas sem permitir estado inválido
 
+Sequência recomendada dentro da Fase 1:
+1. `Cart`
+2. `Sale`
+3. consistência `Cart -> Sale -> Stock`
+
 ---
 
 ## Fase 2 — Application Layer
@@ -48,6 +55,8 @@ Objetivo:
 - orquestrar os fluxos sem deslocar regra para fora do domínio
 
 Entregáveis:
+- `LoadCartUseCase`
+- `SaveCartUseCase`
 - `FinalizeSaleUseCase`
 - `RegisterPaymentUseCase`
 - contratos de entrada e saída
@@ -60,6 +69,7 @@ Gate de qualidade:
 - use case apenas coordena
 - regra crítica segue no domínio
 - testes de aplicação validam orquestração
+- persistência/recuperação do `Cart` não desloca regra de domínio para fora do aggregate
 
 ---
 
